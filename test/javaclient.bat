@@ -1,0 +1,1 @@
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSclient dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerNm=xtstestssl trace=on

@@ -1,0 +1,71 @@
+set JAVA_HOME=C:\Program Files (x86)\Java\jdk1.8.0_271
+mvnw dependency:purge-local-repository clean install
+
+set CLASSPATH=C:\Users\usamih\workspace\XTS\java\com\softwareag\adabas\xts\5.8.2.3\xts-5.8.2.4.jar
+
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSserver dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerNm=xtstest trace=on
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSclient dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerNm=xtstest trace=on
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSserver dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerId=1 trace=on
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSclient dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerId=1 trace=on count=1
+
+set CLASSPATH=C:\Users\usamih\workspace\java\com\softwareag\adabas\xts\5.8.2.3\xts-5.8.2.3.jar;C:\Users\usamih\workspace\java\jars\slf4j-api-1.7.2.jar;C:\Users\usamih\workspace\java\jars\slf4j-log4j12-1.6.2.jar;C:\Users\usamih\workspace\java\jars\log4j-1.2.17.jar
+
+
+java -Dlog4j.debug  -Dlog4j.configuration=file:///C:\\Users\\usamih\\workspace\\java\\log4j.xml -cp "%CLASSPATH%" com.softwareag.adabas.xts7.test.XTSclient dir=i dirparms=file=C:\Users\usamih\workspace\java\xtsurl.cfg ServerId=1 trace=on
+
+java  -cp "%CLASSPATH%" com.softwareag.adabas.xts7.test.XTSclient dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerId=1 trace=on
+
+
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSserver dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerId=77 trace=on
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSclient dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerId=77 trace=on
+
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSserver dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerNm=xtstestssl trace=on
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSclient dir=i dirparms=file=C:\Users\usamih\workspace\XTS\java\test\xtsurl.cfg ServerNm=xtstestssl trace=on
+
+**************** LIST OF KEYWORD PARAMETERS [note 1] ****************
+dir=x, Possible values for x:
+ x=i [INIdir]
+   * Defaults to user provided URL..i.e.dirparms=url=tcpip://.....
+     or Directory Server Lookup if no URL is provided.
+---------------------------------------------------------------------
+dirparms=parms, Possible directory parm values:
+ INI     directory: file=myfile.ini
+ Default directory: url=protocol://host:port?parm=value&parm=value...
+---------------------------------------------------------------------
+serverNm=ssssssss,...,    e.g. serverName=XTSserver,srv32  [note 3,4]
+serverID=nnnnnnnn,...,    e.g. serverID=124,9898,4444      [note 3,4]
+trace={on|off},           Defaults to trace=off
+count=nnnnnnnnnn,         Number of Iterations             [note 2,6,7]
+NbrThreads=nnnnnnnnnn,    Number of Threads                [note 2,6]
+sleep=nnnnnnnnnnnnnnnnnn, Time in milliseconds             [note 2,6]
+timeout=nnnnnnnnnnnnnnnn, Time in milliseconds             [note 2,6]
+message-size=nnnnnnnn,    Size of message to send          [note 8]
+datagram=(YES|no)         bindClient send/send and reply   [note 2,9]
+
+
+ NOTE 1 - Keywords are case INSENSITIVE
+ NOTE 2 - Keyword not used by all applications and may be ignored
+ NOTE 3 - Keyword REQUIRED
+ NOTE 4 - At least 1 serverNm/serverID must be specified
+ NOTE 5 - Type 1 or more of these Dirparm Keywords separated by commas
+ NOTE 6 - Defaults depend on application
+ NOTE 7 - Count is the number of times 1000 calls will be issued. 1000 was
+          chosen for the formula for calculating calls per second
+ NOTE 8 - minimun size is 1 max is 10000000
+ NOTE 9 - Upper case value is the default
+
+
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSclient
+
+java -cp "%CLASSPATH%" com.softwareag.adabas.xts.test.XTSclient dir=i dirparms=file=c:\tmp\xtsurl.cfg ServerNm=XTSTEST trace=on count=1
+
+ * XTSTRACE - 65535 or 0xffff
+ * XTSDIR - where the trace goes. If not defined, it goes locally ("./")
+ * XTS_ENABLE_LOG4J - log4j parameters; If not defined or NO, trace goes to XTSDIR; 
+ *                    Other values: ALL, DEBUG, INFO, WARN, ERROR, FATAL, OFF, and TRACE
+ * MAXSIZE - max trace file size
+ * If only XTSTRACE is defined, trace goes to console
+ * If XTSTRACE and XTSDIR are defined, trace goes to XTSDIR
+ * If XTS_ENABLE_LOG4J and XTSTRACE are defined, trace goes to log4j
+ * If none is defined, trace goes to log4j
+

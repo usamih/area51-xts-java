@@ -1,0 +1,123 @@
+
+Certificate: A file that contains a public key and identifies who owns that key and its corresponding private key. In a signed certificate, a trusted certificate authority (CA) affirms that a public key does indeed belong to the owner named in the certificate.
+
+Key: A unique string of characters that seeds a mathematical algorithm for encryption and decryption. Keys come in pairs. A public key encrypts data to be decrypted with the corresponding private key.
+
+Keystore: A file that holds a combination of keys and certificates.
+
+PKCS, PFX: A binary format for key, certificate, and keystore files. Typical file names are *.pkcs, *.p12, *.p7b, *.pfx
+
+PEM: An ASCII text format for keys and certificates. Typical file extensions are *.pem, *.key, *.csr, *.cert. The binary counterpart is DER-format file
+
+
+https://dzone.com/articles/keytool-commandutility-to-generate-a-keystorecerti
+
+keytool -list -keystore %JAVA_HOME%/jre/lib/security/cacerts
+
+keytool -list -keystore C:\Program Files\Java\jdk1.8.0_60\jre\lib\security\cacerts
+
+keytool -genkey -keystore C:\Program Files\Java\jdk1.8.0_60\jre\lib\security\cacerts -alias ssl -keyalg RSA -sigalg SHA256 withRSA -validity 365
+
+psswd=xtstest
+
+set KEYTOOL="C:\Program Files\Java\jdk1.8.0_60\bin"
+
+==================== 1 ===================
+// Create a keystore (Java keystore and key pair)
+%KEYTOOL%\keytool -genkey -keystore keystore.jks -alias javaserver -keyalg RSA -sigalg SHA256withRSA -validity 365  -keysize 2048 -storepass javatest 
+
+    -keyalg specifies the algorithm to be used to generate the key pair
+    -keysize specifies the size of each key to be generated
+    -sigalg specifies the algorithm that should be used to sign the self-signed certificate; this algorithm must be compatible with keyalg.
+
+//    list the entries in keystore to view the content:
+%KEYTOOL%\keytool -list -v -keystore keystore.jks -storepass javatest 
+%KEYTOOL%\keytool -list -v -keystore truststore.jks -storepass javatest 
+
+// create a Certificate Signing Request (CSR) from the created keystore to share with the Certificate Authority (CA) to sign and generate the primary/server certificate.
+%KEYTOOL%\keytool -certreq -keystore keystore.jks -alias javaserver -file javaxts.csr -storepass javatest
+
+// Export the generated server certificate xtsserver.cer
+%KEYTOOL%\keytool -export -keystore keystore.jks -alias javaserver -file xtsserver.cer -storepass javatest
+
+// import the certificate (xtsserver.cer) into the truststore of your client
+%KEYTOOL%\keytool -import -v -trustcacerts -keystore truststore.jks -alias javaclient -file xtsserver.cer -keypass javatest
+
+================== 2 ===================
+Generate the self-signed certificate and place it in the KeyStore
+%KEYTOOL%\keytool -genkeypair -keystore keystore1.jks -alias javasslserver -keyalg RSA -validity 365 -keysize 2048 -storepass javatest
+
+Export the certificate needs to a certificate file.
+%KEYTOOL%\keytool -export -keystore keystore1.jks -alias javasslserver -rfc -file myjava.cer
+
+Installing the Self-Signed Certificate on the Client
+%KEYTOOL%\keytool -importcert -keystore truststore1.jks -alias javasslclient -file myjava.cer
+=======================================
+
+Package existing PEM-format key and certificates in a new Java keystore
+openssl pkcs12 -export -in <server.cert.pem> -inkey <private.key.pem> -certfile <intermediate.cert.pem> -name "<your.domain.com>" -out <your.domain.com>.p12
+
+=======================================
+https://docs.oracle.com/cd/E35976_01/server.740/es_admin/src/tadm_ssl_convert_pem_to_jks.html
+
+// C-SSL URLs
+XTSlisten.xtstestssl[0]=SSL://localhost\:3102?CERT_FILE=certs\cacert.pem&CERT_PSSWD=test
+XTSaccess.xtstestssl[0]=SSL://localhost\:3102?CAFILE=certs\myappcert.pem&CAPATH=.&CERT_PSSWD=test
+
+// JAVA-SSL URLs
+XTSlisten.xtstestssl[0]=SSL\://localhost\:3102?KEYSTORE=certs\\keystore.jks&KEYSTORE_PASSWD=javatest&TRUSTSTORE=certs\\truststore.jks&TRUSTSTORE_PASSWD=javatest
+XTSaccess.xtstestssl[0]=SSL\://localhost\:3102?TRUSTSTORE=certs\\truststore.jks&TRUSTSTORE_PASSWD=javatest
+
+// Server C, client Java
+XTSlisten.xtstestssl1[0]=SSL://localhost\:3102?CERT_FILE=certs\cacert.pem&CERT_PSSWD=test
+XTSaccess.xtstestssl1[0]=SSL\://localhost\:3102?TRUSTSTORE=certs\\truststore-c.jks&TRUSTSTORE_PASSWD=xtstest
+
+1.Convert the certificate from PEM to PKCS12, using the following command:
+openssl pkcs12 -export -out myappcert.pkcs12 -in myappcert.pem
+pswd=xtstest
+
+2.Create and then delete an empty truststore using the following commands:
+%KEYTOOL%\keytool -genkey -keyalg RSA -alias endeca -keystore truststore-c.jks
+%KEYTOOL%\keytool -delete -alias endeca -keystore truststore-c.jks
+psswd=xtstest
+
+3.Import the CA into the truststore, using the following command:
+%KEYTOOL%\keytool -import -v -trustcacerts -alias endeca-ca -file cacert.pem -keystore truststore-c.jks
+
+
+4.Create an empty Java KeyStore, using the following commands:
+%KEYTOOL%\keytool -genkey -keyalg RSA -alias endeca -keystore keystore-c.jks
+%KEYTOOL%\keytool -delete -alias endeca -keystore keystore-c.jks
+psswd=test
+
+5.Import your private key into the empty JKS, using the following command:
+%KEYTOOL%\keytool -v -importkeystore -srckeystore myappcert.pkcs12 -srcstoretype PKCS12 -destkeystore keystore-c.jks -deststoretype JKS
+
+%KEYTOOL%\keytool -storepasswd -new test -keystore keystore-c.jks
+
+// Server JAVA, client C
+XTSlisten.xtstestssl2[0]=SSL\://localhost\:3102?KEYSTORE=certs\\keystore-c.jks&KEYSTORE_PASSWD=xtstest&TRUSTSTORE=certs\\truststore-c.jks&TRUSTSTORE_PASSWD=xtstest
+XTSaccess.xtstestssl2[0]=SSL://localhost\:3102?CAFILE=certs\myappcert.pem&CAPATH=.&CERT_PSSWD=test
+===============================
+
+
+// server JAVA, client C
+%KEYTOOL%\keytool -import -v -trustcacerts -alias xtsclientssl  -file myappcert.pem -keystore truststore-c.jks -keypass javatest
+XTSlisten.xtstestssl[0]=SSL\://localhost\:3102?KEYSTORE=certs\\keystore.jks&KEYSTORE_PASSWD=javatest
+XTSaccess.xtstestssl[0]=SSL://localhost\:3102?CAFILE=certs\myappcert.pem&CAPATH=.&CERT_PSSWD=test&KEY_FILE=certs\myappkey.pem
+
+// add XTS-C CA certificate to SSL-JAVA keystore
+
+%KEYTOOL%\keytool -import -v -trustcacerts -alias xtscaclientssl  -file cacert.pem -keystore truststore.jks -keypass xtstest
+
+%KEYTOOL%\keytool -import -v -trustcacerts -alias xtsclientsslc  -file myappcert.pem -keystore truststore.jks -keypass xtstest
+
+
+
+// server JAVA, client C
+XTSlisten.xtstestssl[0]=SSL\://localhost\:3102?KEYSTORE=certs\\keystore.jks&KEYSTORE_PASSWD=xtstest
+XTSaccess.xtstestssl[0]=SSL://localhost\:3102?CAFILE=certs\myappcert.pem&CAPATH=.&CERT_PSSWD=test
+
+// server C, client Java
+XTSlisten.xtstestssl[0]=SSL://localhost\:3102?CERT_FILE=certs\cacert.pem&CERT_PSSWD=test
+
